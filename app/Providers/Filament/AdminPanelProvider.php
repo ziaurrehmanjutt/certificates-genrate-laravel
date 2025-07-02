@@ -25,6 +25,8 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')
+            ->brandName('Your School Certificate System')  // 👈 change the name shown in header
+            ->favicon(asset('favicon.ico'))                // 👈 change the favicon
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -37,6 +39,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+                \App\Filament\Admin\Resources\StudentResource\Widgets\OverviewStats::class,
             ])
             ->middleware([
                 EncryptCookies::class,
