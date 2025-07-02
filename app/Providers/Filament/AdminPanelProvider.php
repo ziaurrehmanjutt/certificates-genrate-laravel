@@ -25,6 +25,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')
+            ->login()
             ->brandName('Your School Certificate System')  // 👈 change the name shown in header
             ->favicon(asset('favicon.ico'))                // 👈 change the favicon
             ->colors([

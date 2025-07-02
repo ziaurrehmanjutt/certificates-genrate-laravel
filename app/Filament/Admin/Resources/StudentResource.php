@@ -69,7 +69,8 @@ class StudentResource extends Resource
             TextColumn::make('cnic')
                 ->label('CNIC')
                 ->limit(20),
-            DateColumn::make('dob')
+            TextColumn::make('dob')
+              ->date('Y-m-d')
                 ->label('Date of Birth'),
         ])
         ->filters([])
