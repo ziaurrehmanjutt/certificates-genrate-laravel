@@ -18,6 +18,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
+
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -26,7 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName('Your School Certificate System')  // 👈 change the name shown in header
+            ->brandName('Certificate System')  // 👈 change the name shown in header
             ->favicon(asset('favicon.ico'))                // 👈 change the favicon
             ->colors([
                 'primary' => Color::Amber,
@@ -36,12 +37,17 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Pages\Dashboard::class,
             ])
+
+
+              ->topbar()
+
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
                 \App\Filament\Admin\Resources\StudentResource\Widgets\OverviewStats::class,
             ])
+            
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
