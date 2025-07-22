@@ -28,46 +28,63 @@ class CertificateTemplateResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                TextInput::make('certificate_no')
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->maxLength(100),
-                Select::make('student_id')
-                    ->relationship('student', 'name')
-                    ->required(),
-                Select::make('template_id')
-                    ->relationship('certificateTemplate', 'name')
-                    ->required()
-                    ->label('Certificate Template'),
-                DatePicker::make('issued_date'),
-                FileUpload::make('qr_code_path')
-                    ->directory('qrcodes')
-                    ->label('QR Code')
-                    ->image()
-                    ->maxSize(1024),
-            ]);
+        return $form->schema([
+            \Filament\Forms\Components\KeyValue::make('name')
+                ->label('Name (Multi-language)')
+                ->keyLabel('Language Code (e.g., en, ur)')
+                ->valueLabel('Name')
+                ->required(),
+
+            \Filament\Forms\Components\KeyValue::make('description')
+                ->label('Description (Multi-language)')
+                ->keyLabel('Language Code (e.g., en, ur)')
+                ->valueLabel('Description'),
+
+            \Filament\Forms\Components\FileUpload::make('background_image_path')
+                ->image()
+                ->label('Background Image')
+                ->directory('certificate-backgrounds'),
+
+            \Filament\Forms\Components\Select::make('orientation')
+                ->options([
+                    'landscape' => 'Landscape',
+                    'portrait' => 'Portrait',
+                ])
+                ->required(),
+
+            \Filament\Forms\Components\TextInput::make('font_family')
+                ->label('Font Family'),
+
+            \Filament\Forms\Components\KeyValue::make('extra_config')
+                ->label('Extra Config (Optional JSON)')
+                ->keyLabel('Config Key')
+                ->valueLabel('Value'),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-            TextColumn::make('name')
-                ->searchable(),
-            TextColumn::make('description')
-                ->limit(50),
-        ])
-        ->filters([])
-        ->actions([
-            Tables\Actions\EditAction::make(),
-            Tables\Actions\DeleteAction::make(),
-        ])
-        ->bulkActions([
-            Tables\Actions\DeleteBulkAction::make(),
-        ]);
+                \Filament\Tables\Columns\TextColumn::make('name')
+                    ->label('Name')
+                    ->formatStateUsing(fn($state) => $state[app()->getLocale()] ?? '-')
+                    ->searchable(),
+
+                \Filament\Tables\Columns\TextColumn::make('description')
+                    ->label('Description')
+                    ->formatStateUsing(fn($state) => $state[app()->getLocale()] ?? '-')
+                    ->limit(40),
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make(),
+            ]);
     }
+
 
     public static function getRelations(): array
     {

@@ -5,6 +5,10 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+
+use App\Http\Controllers\CertificatePreviewController;
+
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -36,3 +40,9 @@ Route::get('/lang/{locale}', function ($locale) {
 
 
 require __DIR__.'/auth.php';
+
+
+
+
+Route::get('/certificate-preview', [CertificatePreviewController::class, 'form'])->name('certificate.preview.form');
+Route::post('/certificate-preview', [CertificatePreviewController::class, 'generate'])->name('certificate.preview.generate');
