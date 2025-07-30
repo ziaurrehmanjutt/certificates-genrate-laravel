@@ -13,10 +13,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\{Select, TextInput, Textarea, Toggle, Fieldset, Group, Grid};
+use Filament\Forms\Get;
 use App\Models\CertificateTemplate;
 
 class CertificateTemplateFieldResource extends Resource
@@ -31,25 +29,32 @@ class CertificateTemplateFieldResource extends Resource
 
     public static function form(Form $form): Form
     {
+
+
         return $form->schema([
             Select::make('template_id')
                 ->label('Certificate Template')
                 ->required()
                 ->options(function () {
                     $locale = app()->getLocale();
-
-                    return CertificateTemplate::all()
-                        ->mapWithKeys(function ($template) use ($locale) {
-                            return [$template->id => $template->name[$locale] ?? 'Unnamed'];
-                        });
+                    return \App\Models\CertificateTemplate::all()
+                        ->mapWithKeys(fn($template) => [$template->id => $template->name[$locale] ?? 'Unnamed']);
                 }),
 
             TextInput::make('key')
                 ->required()
-                ->unique(),
+                ->unique()
+                ->label('Field Key'),
 
-            TextInput::make('label.en')->label('Label (EN)')->required(),
-            TextInput::make('label.ur')->label('Label (UR)'),
+            Fieldset::make('Label (Multi-language)')
+                ->schema([
+                    TextInput::make('label.en')
+                        ->label('English')
+                        ->required(),
+
+                    TextInput::make('label.ur')
+                        ->label('Urdu'),
+                ]),
 
             Select::make('type')
                 ->options([
@@ -57,25 +62,73 @@ class CertificateTemplateFieldResource extends Resource
                     'image' => 'Image',
                     'date' => 'Date',
                 ])
-                ->required(),
+                ->required()
+                ->live(),
 
             Select::make('source_type')
+                ->label('Source Type')
                 ->options([
                     'static' => 'Static Value',
-                    'system' => 'System Field',
-                    'custom' => 'Custom Field',
+                    'system' => 'Student Field',
+                    'custom' => 'Student Extra Field',
                 ])
+                ->required()
+                ->live(),
+
+            // If source_type is 'system', allow choosing predefined student fields
+            Select::make('source_key')
+                ->label('System Field')
+                ->options([
+                    'name' => 'Student Name',
+                    'roll_no' => 'Roll Number',
+                    'std_cnic' => 'CNIC',
+                    'dob' => 'Date of Birth',
+                    'std_class' => 'Class',
+                    'std_program' => 'Program',
+                ])
+                ->visible(fn(Get $get) => $get('source_type') === 'system'),
+
+            // If source_type is 'custom', show student extra fields (you may want to fetch these dynamically)
+            Select::make('source_key')
+                ->label('Custom Field')
+                ->options(function (Get $get) {
+                    if ($get('source_type') !== 'custom') {
+                        return [];
+                    }
+
+                    $type = $get('type'); // e.g., text, image, date
+                    return \App\Models\StudentDynamicField::query()
+                        ->when($type, fn($query) => $query->where('type', $type))
+                        ->get()
+                        ->mapWithKeys(fn($field) => [$field->key => $field->label['en'] ?? $field->key]);
+                })
+                ->visible(fn(Get $get) => $get('source_type') === 'custom')
+                ->reactive() // refresh when `type` changes
+                ->live()
                 ->required(),
 
-            TextInput::make('source_key')->label('Source Key (if system/custom)')->nullable(),
+            // Static value inputs
+            Fieldset::make('Default Value (Multi-language)')
+                ->schema([
+                    TextInput::make('default_value.en')
+                        ->label('English'),
+                    TextInput::make('default_value.ur')
+                        ->label('Urdu'),
+                ])
+                ->visible(fn(Get $get) => $get('source_type') === 'static'),
 
-            TextInput::make('default_value.en')->label('Default Value (EN)')->nullable(),
-            TextInput::make('default_value.ur')->label('Default Value (UR)')->nullable(),
+            Fieldset::make('Help Text (Multi-language)')
+                ->schema([
+                    Textarea::make('help_text.en')
+                        ->label('English')
+                        ->rows(3),
+                    Textarea::make('help_text.ur')
+                        ->label('Urdu')
+                        ->rows(3),
+                ]),
 
-            Textarea::make('help_text.en')->label('Help Text (EN)')->nullable(),
-            Textarea::make('help_text.ur')->label('Help Text (UR)')->nullable(),
-
-            Forms\Components\Toggle::make('is_required')->label('Required'),
+            Toggle::make('is_required')
+                ->label('Required'),
         ]);
     }
 

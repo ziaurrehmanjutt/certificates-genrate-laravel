@@ -16,10 +16,18 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\KeyValue;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Get;
+
+use ValentinMorice\FilamentJsonColumn\JsonColumn;
+use ValentinMorice\FilamentJsonColumn\JsonInfolist;
 
 
 
@@ -37,31 +45,80 @@ class StudentDynamicFieldResource extends Resource
                 ->unique()
                 ->label('Field Key'),
 
-            KeyValue::make('label')
-                ->label('Label (Multi-language)')
-                ->keyLabel('Locale')
-                ->valueLabel('Label'),
-
-            Select::make('type')
-                ->options([
-                    'text' => 'Text',
-                    'number' => 'Number',
-                    'date' => 'Date',
-                    'select' => 'Select (Dropdown)',
-                ])
-                ->required(),
-
-            KeyValue::make('options')
-                ->label('Options (if Select)'),
-
-            KeyValue::make('default_value')
-                ->label('Default Value (Multi-language)'),
-
-            KeyValue::make('help_text')
-                ->label('Help Text (Multi-language)'),
-
             Toggle::make('is_required')
                 ->label('Is Required'),
+
+
+            Fieldset::make('Label (Multi-language)')
+                ->schema([
+                    TextInput::make('label.en')
+                        ->label('English')
+                        ->suffix('🇬🇧')
+                        ->required(),
+
+                    TextInput::make('label.ar')
+                        ->label('Arabic')
+                        ->suffix('🇸🇦')
+                        ->required(),
+                ]),
+
+
+
+            Group::make([
+                Select::make('type')
+                    ->options([
+                        'text' => 'Text',
+                        'longtext' => 'Long Text',
+                        'number' => 'Number',
+                        'date' => 'Date',
+                        'image' => 'Image',
+                    ])
+                    ->required()
+                    ->live(),
+
+                // English input
+                TextInput::make('default_value')
+                    ->label('Default (English)')
+                    ->visible(fn(Get $get) => in_array($get('type'), ['text', 'number']))
+                    ->numeric(fn(Get $get) => $get('type') === 'number'),
+
+                Textarea::make('default_value')
+                    ->label('Default (English)')
+                    ->visible(fn(Get $get) => $get('type') === 'longtext'),
+
+                DatePicker::make('default_value')
+                    ->label('Default (English)')
+                    ->visible(fn(Get $get) => $get('type') === 'date'),
+
+                FileUpload::make('default_value')
+                    ->label('Default (English)')
+                    ->visible(fn(Get $get) => $get('type') === 'image'),
+
+
+            ])
+                ->columns(2)
+                ->columnSpanFull(),
+
+
+
+
+
+            Fieldset::make('Help Text (Multi-language)')
+                ->schema([
+                    Textarea::make('help_text.en')
+                        ->label('English')
+                        // ->suffix('🇬🇧')
+                        ->rows(3),
+
+                    Textarea::make('help_text.ar')
+                        ->label('Arabic')
+                        // ->suffix('🇸🇦')
+                        ->rows(3),
+                ]),
+
+
+
+
         ]);
     }
 
@@ -73,11 +130,9 @@ class StudentDynamicFieldResource extends Resource
                 TextColumn::make('key')->searchable(),
                 TextColumn::make('label')
                     ->label('Label')
-                    ->formatStateUsing(function ($state) {
-                        return $state;
+                    ->formatStateUsing(function ($record) {
                         $locale = app()->getLocale();
-                        $decoded = json_decode($state, true);
-                        return $decoded[$locale] ?? $decoded['en'] ?? '—';
+                        return $record->label[$locale] ?? $record->label['en'] ?? '—';
                     }),
                 TextColumn::make('type'),
                 IconColumn::make('is_required')->boolean(),

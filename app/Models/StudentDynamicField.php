@@ -19,7 +19,6 @@ class StudentDynamicField extends Model
     protected $casts = [
         'label' => 'array',
         'options' => 'array',
-        'default_value' => 'array',
         'help_text' => 'array',
         'is_required' => 'boolean',
     ];

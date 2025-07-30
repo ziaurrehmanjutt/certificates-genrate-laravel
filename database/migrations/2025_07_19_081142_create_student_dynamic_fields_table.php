@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('key')->unique(); // e.g., "cnic_number"
             $table->string('type')->default('text'); // text, number, date, select, etc.
             $table->json('options')->nullable(); // for dropdown: e.g., [ "Option1", "Option2" ]
-            $table->json('default_value')->nullable(); // default value(s)
+            $table->string('default_value')->nullable(); // default value(s)
             $table->json('help_text')->nullable(); // multi-language description/help
             $table->boolean('is_required')->default(false);
             $table->timestamps();
