@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AdminAuthController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -46,3 +47,22 @@ require __DIR__.'/auth.php';
 
 Route::get('/certificate-preview', [CertificatePreviewController::class, 'form'])->name('certificate.preview.form');
 Route::post('/certificate-preview', [CertificatePreviewController::class, 'generate'])->name('certificate.preview.generate');
+
+
+
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('login', [AdminAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('login', [AdminAuthController::class, 'login']);
+    Route::get('register', [AdminAuthController::class, 'showRegisterForm'])->name('register');
+    Route::post('register', [AdminAuthController::class, 'register']);
+    Route::get('forgot-password', [AdminAuthController::class, 'showForgotForm'])->name('password.request');
+    Route::post('forgot-password', [AdminAuthController::class, 'sendResetLink'])->name('password.email');
+
+
+
+
+ 
+});
+
+Route::get('dashboard', [AdminAuthController::class, 'dashboard'])->name('admin.dashboard');
