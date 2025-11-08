@@ -63,6 +63,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Students Management Routes
     Route::resource('students', StudentController::class);
 
+    // Student Enrollment Routes
+    Route::post('students/{student}/enrollments', [StudentController::class, 'storeEnrollment'])->name('students.enrollments.store');
+    Route::delete('students/{student}/enrollments/{enrollment}', [StudentController::class, 'destroyEnrollment'])->name('students.enrollments.destroy');
+
 });
 
 Route::get('dashboard', [AdminAuthController::class, 'dashboard'])->name('admin.dashboard');
