@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\Admin\StudentController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -59,10 +60,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('forgot-password', [AdminAuthController::class, 'showForgotForm'])->name('password.request');
     Route::post('forgot-password', [AdminAuthController::class, 'sendResetLink'])->name('password.email');
 
+    // Students Management Routes
+    Route::resource('students', StudentController::class);
 
-
-
- 
 });
 
 Route::get('dashboard', [AdminAuthController::class, 'dashboard'])->name('admin.dashboard');

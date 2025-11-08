@@ -3,27 +3,64 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Student extends Model
 {
-
+    use SoftDeletes;
 
     protected $fillable = [
-        'name',
-        'roll_no',
-        'program_id',
-        'class_id',
+        'first_name',
+        'middle_name',
+        'last_name',
+        'email',
+        'phone',
         'cnic',
-        'dob'
+        'dob',
+        'gender',
+        'profile_image',
+        'address',
+        'father_name',
+        'mother_name',
+        'remarks'
     ];
 
-    public function program()
+    protected $casts = [
+        'dob' => 'date',
+    ];
+
+    /**
+     * Get full name of the student
+     */
+    public function getFullNameAttribute()
     {
-        return $this->belongsTo(Program::class);
+        return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
     }
 
-    public function classSection()
+    /**
+     * Get all enrollments for this student
+     */
+    public function enrollments()
     {
-        return $this->belongsTo(ClassSection::class, 'class_id');
+        return $this->hasMany(StudentEnrollment::class);
+    }
+
+    /**
+     * Get active enrollments
+     */
+    public function activeEnrollments()
+    {
+        return $this->hasMany(StudentEnrollment::class)
+                    ->whereIn('status', ['admitted', 'active']);
+    }
+
+    /**
+     * Get programs through enrollments
+     */
+    public function programs()
+    {
+        return $this->belongsToMany(Program::class, 'student_enrollments')
+                    ->withPivot(['roll_no', 'status', 'certificate_status', 'cgpa', 'grade'])
+                    ->withTimestamps();
     }
 }
